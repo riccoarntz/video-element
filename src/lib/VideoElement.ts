@@ -318,5 +318,7 @@ export default class VideoElement extends EventDispatcher {
     }
 
     this.element = null;
+
+    super.dispose();
   }
 }
