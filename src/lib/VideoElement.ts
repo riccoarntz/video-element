@@ -174,7 +174,7 @@ export default class VideoElement extends EventDispatcher {
    */
   public setSrc(
     video: IVideo,
-    preload: boolean = this.options.preloadWithXHR || false,
+    preloadWithXHR: boolean = this.options.preloadWithXHR || false,
   ): Promise<Array<any>> {
     if (this.element) {
       // Set poster
@@ -185,7 +185,7 @@ export default class VideoElement extends EventDispatcher {
       // Check if the file has been preloaded before
       const preloadedVideo = this.preloadedVideos[video.src];
 
-      if (!preloadedVideo && preload) {
+      if (!preloadedVideo && preloadWithXHR) {
         // Return when ready
         return Promise.all([
           // this.getDuration(),
