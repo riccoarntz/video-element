@@ -104,6 +104,14 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @method togglePlay
+   */
+  public togglePlay(): void {
+    this.isPlaying ? this.pause() : this.play();
+  }
+
+  /**
+   * @public
    * @method progress
    */
   public seek(time: number): void {
