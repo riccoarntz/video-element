@@ -94,6 +94,7 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @description: Will restart the video at a currentTime of 0.
    * @method replay
    */
   public replay(): void {
@@ -104,6 +105,7 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @description: Will toggle the play/pause state
    * @method togglePlay
    */
   public togglePlay(): void {
@@ -122,6 +124,7 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @description: allows a number between [0-1].
    * @method progress
    */
   public progress(progress: number): void {
@@ -143,6 +146,8 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @description: Sometimes the duration method is called too soon for the API and it returns `NaN`. This method is
+   * a work-around then will run an interval until the API is ready for returning it's actual duration.
    * @method getDuration
    */
   public getDuration(): Promise<number> {
@@ -170,6 +175,7 @@ export default class VideoElement extends EventDispatcher {
 
   /**
    * @public
+   * @description: the setSrc method is resolved when the video is fully preloaded(preloadWithXHR), or when it's native canplay event is triggered
    * @method set src
    */
   public setSrc(
