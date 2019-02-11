@@ -39,7 +39,7 @@ Run the example:
 ## Usage
 Detailed documentation and examples are located in the wiki!
 
-### [Check the wiki!](https://github.com/riccoarntz/seng-video-element/wiki)
+### [Check the wiki!](https://github.com/riccoarntz/video-element/wiki)
 
 
 ## Building
@@ -49,7 +49,7 @@ In order to build seng-video-element, ensure that you have [Git](http://git-scm.
 
 Clone a copy of the repo:
 ```sh
-git clone https://github.com/riccoarntz/seng-video-element.git
+git clone https://github.com/riccoarntz/video-element.git
 ```
 
 Change to the vue-transition directory:
