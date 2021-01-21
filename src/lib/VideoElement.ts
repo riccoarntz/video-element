@@ -104,7 +104,7 @@ export default class VideoElement extends EventDispatcher {
     if (this.isPlaying) {
       this.animationFrame = requestAnimationFrame(this.tick);
     }
-    const currentTime = this.$refs.video.currentTime;
+    const currentTime = this.element.currentTime;
     if (currentTime !== this.currentTime) {
       this.currentTime = currentTime;
 
@@ -166,21 +166,9 @@ export default class VideoElement extends EventDispatcher {
    */
   public progress(progress: number): void {
     if (this.element) {
-      this.element.currentTime = progress * this.duration();
+      this.element.currentTime = progress * this.element.duration;
     }
   }
-
-  /**
-   * @public
-   * @method duration
-   */
-  public duration(): number {
-    if (this.element) {
-      return this.element.duration;
-    }
-    return 0;
-  }
-
   /**
    * @public
    * @description: Sometimes the duration method is called too soon for the API and it returns `NaN`. This method is
@@ -191,9 +179,10 @@ export default class VideoElement extends EventDispatcher {
     return new Promise((resolve: Function) => {
       this.clearInterval(VideoElement.DURATION_INTERVAL);
       this.intervals[VideoElement.DURATION_INTERVAL] = setInterval(() => {
-        if (this.element && this.duration() > 0) {
+        if (this.element && this.element.duration > 0) {
+          this.duration = this.element.duration;
           this.clearInterval(VideoElement.DURATION_INTERVAL);
-          resolve(this.duration());
+          resolve(this.duration);
         }
       }, 60);
     });
@@ -230,10 +219,14 @@ export default class VideoElement extends EventDispatcher {
         this.element.poster = video.poster;
       }
 
-      // Check if the file has been preloaded before
-      const preloadedVideo = this.preloadedVideos[video.src];
+      let preloadedVideo = null;
 
-      if (!preloadedVideo && preloadWithXHR) {
+      // Check if the file has been preloaded before
+      if (!srcObject) {
+        preloadedVideo = this.preloadedVideos[<string>video.src];
+      }
+
+      if (!preloadedVideo && preloadWithXHR && !srcObject) {
         // Return when ready
         return Promise.all([
           // this.getDuration(),
@@ -242,15 +235,11 @@ export default class VideoElement extends EventDispatcher {
               // Pre-loading videos and setting the blob as a source *might* not work in certain browser, so we use
               // the original
               // source
-              if (srcObject) {
-                this.element.srcObject = VideoElement.NO_XHR_PRELOAD_SUPPORT
-                  ? video.src
-                  : this.preloadedVideos[video.src];
-              } else {
-                this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
-                  ? video.src
-                  : this.preloadedVideos[video.src];
-              }
+              this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
+                ? <string>video.src
+                : this.preloadedVideos[<string>video.src];
+
+              this.getDuration();
             }
           }),
         ]);
@@ -274,13 +263,12 @@ export default class VideoElement extends EventDispatcher {
       // Pre-loading videos and setting the blob as a source *might* not work in certain browser, so we use the original
       // source
       if (srcObject) {
-        this.element.srcObject = VideoElement.NO_XHR_PRELOAD_SUPPORT
-          ? video.src
-          : preloadedVideo || video.src;
+        this.element.srcObject = <MediaStream>video.src;
       } else {
         this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
           ? video.src
           : preloadedVideo || video.src;
+        this.getDuration();
       }
 
       this.element.load();
@@ -314,16 +302,19 @@ export default class VideoElement extends EventDispatcher {
    * @returns {Promise<void>}
    */
   private preload(video: IVideo): Promise<void> {
-    const loadVideoTask = new LoadVideoTask({
-      assets: video.src,
-      onAssetLoaded: ({ asset }) => {
-        this.preloadedVideos[video.src] = asset;
-      },
-    });
+    if (typeof video.src === 'string') {
+      const loadVideoTask = new LoadVideoTask({
+        assets: video.src,
+        onAssetLoaded: ({ asset }) => {
+          this.preloadedVideos[<string>video.src] = asset;
+        },
+      });
 
-    return loadVideoTask.load().then(() => {
-      loadVideoTask.dispose();
-    });
+      return loadVideoTask.load().then(() => {
+        loadVideoTask.dispose();
+      });
+    }
+    return Promise.resolve();
   }
 
   /**
