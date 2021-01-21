@@ -14,6 +14,9 @@ export default class VideoElement extends EventDispatcher {
   private intervals: { [key: string]: any } = {};
   public container: HTMLElement | null;
   public element: HTMLVideoElement | null;
+  private duration: number = 0;
+  private currentTime: number = 0;
+  private animationFrame: any;
 
   // private hasClickInteraction: boolean = false;
   private clickInteractionEventListener: DisposableEventListener | null;
@@ -67,6 +70,18 @@ export default class VideoElement extends EventDispatcher {
     this.disposableManager.add(
       new DisposableEventListener(this.element, 'pause', this.updatePlayingState.bind(this, false)),
     );
+
+    this.disposableManager.add(
+      new DisposableEventListener(this.element, 'ended', this.onVideoEnded.bind(this)),
+    );
+  }
+
+  private onVideoEnded() {
+    this.updatePlayingState(false);
+
+    if (this.options.onEnded) {
+      this.options.onEnded();
+    }
   }
 
   /**
@@ -75,6 +90,28 @@ export default class VideoElement extends EventDispatcher {
    */
   private updatePlayingState(isPlaying: boolean): void {
     this.isPlaying = isPlaying;
+
+    if (this.options.onPlaying) {
+      this.options.onPlaying(this.isPlaying);
+    }
+
+    if (isPlaying) {
+      this.tick();
+    }
+  }
+
+  private tick() {
+    if (this.isPlaying) {
+      this.animationFrame = requestAnimationFrame(this.tick);
+    }
+    const currentTime = this.$refs.video.currentTime;
+    if (currentTime !== this.currentTime) {
+      this.currentTime = currentTime;
+
+      if (this.options.onTimeUpdate) {
+        this.options.onTimeUpdate(this.currentTime, this.duration);
+      }
+    }
   }
 
   /**
@@ -181,7 +218,12 @@ export default class VideoElement extends EventDispatcher {
   public setSrc(
     video: IVideo,
     preloadWithXHR: boolean = this.options.preloadWithXHR || false,
+    srcObject: boolean = false,
   ): Promise<Array<any>> {
+    this.currentTime = 0;
+    this.duration = 0;
+    this.updatePlayingState(false);
+
     if (this.element) {
       // Set poster
       if (video.poster) {
@@ -200,9 +242,15 @@ export default class VideoElement extends EventDispatcher {
               // Pre-loading videos and setting the blob as a source *might* not work in certain browser, so we use
               // the original
               // source
-              this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
-                ? video.src
-                : this.preloadedVideos[video.src];
+              if (srcObject) {
+                this.element.srcObject = VideoElement.NO_XHR_PRELOAD_SUPPORT
+                  ? video.src
+                  : this.preloadedVideos[video.src];
+              } else {
+                this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
+                  ? video.src
+                  : this.preloadedVideos[video.src];
+              }
             }
           }),
         ]);
@@ -225,9 +273,16 @@ export default class VideoElement extends EventDispatcher {
 
       // Pre-loading videos and setting the blob as a source *might* not work in certain browser, so we use the original
       // source
-      this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
-        ? video.src
-        : preloadedVideo || video.src;
+      if (srcObject) {
+        this.element.srcObject = VideoElement.NO_XHR_PRELOAD_SUPPORT
+          ? video.src
+          : preloadedVideo || video.src;
+      } else {
+        this.element.src = VideoElement.NO_XHR_PRELOAD_SUPPORT
+          ? video.src
+          : preloadedVideo || video.src;
+      }
+
       this.element.load();
 
       // Return when ready
@@ -319,6 +374,10 @@ export default class VideoElement extends EventDispatcher {
     this.removeClickInteractionListener();
 
     this.clearInterval(VideoElement.DURATION_INTERVAL);
+
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
 
     this.disposableManager.dispose();
 

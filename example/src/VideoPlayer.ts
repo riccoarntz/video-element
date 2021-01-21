@@ -10,9 +10,9 @@ export default class VideoPlayer {
     this.timeElement = element.querySelector('.js-time');
 
     this.videoPlayer = new VideoElement(<HTMLElement>element.querySelector('.js-player'), {
-      preloadWithXHR: true,
+      preloadWithXHR: false,
       loop: false,
-      muted: true,
+      muted: false,
       requireClickListener: true,
     });
 
@@ -41,6 +41,7 @@ export default class VideoPlayer {
       })
       .then(() => {
         element.classList.remove('is-loading');
+
         this.videoPlayer.play();
 
         this.videoPlayer.getDuration().then(value => {

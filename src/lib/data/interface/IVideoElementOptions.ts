@@ -23,4 +23,8 @@ export interface IVideoElementOptions {
    * @description: fix/workaround for autoplaying a video with sound. This will attach a click-listener to the window which will do a play and pause directly. After this click is catched we can auto-play/call the play-method directly to any video within this instance
    */
   requireClickListener?: boolean;
+
+  onPlaying?: Function;
+  onEnded?: Function;
+  onTimeUpdate?: Function;
 }
