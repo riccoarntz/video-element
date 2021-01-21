@@ -22,6 +22,7 @@ export default class VideoElement extends EventDispatcher {
   private clickInteractionEventListener: DisposableEventListener | null;
   private canPlayListener: DisposableEventListener | null;
   private handleCanPlayPromise: Function | null;
+  private onTick: any;
   private disposableManager: DisposableManager = new DisposableManager();
 
   public isPlaying: boolean = false;
@@ -53,6 +54,8 @@ export default class VideoElement extends EventDispatcher {
     }
 
     this.container.appendChild(this.element);
+
+    this.onTick = this.tick.bind(this);
 
     if (this.options.requireClickListener) {
       this.clickInteractionEventListener = new DisposableEventListener(
@@ -102,7 +105,7 @@ export default class VideoElement extends EventDispatcher {
 
   private tick() {
     if (this.isPlaying) {
-      this.animationFrame = requestAnimationFrame(this.tick);
+      this.animationFrame = requestAnimationFrame(this.onTick);
     }
     const currentTime = this.element.currentTime;
     if (currentTime !== this.currentTime) {
