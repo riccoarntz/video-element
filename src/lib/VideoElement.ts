@@ -107,7 +107,7 @@ export default class VideoElement extends EventDispatcher {
     if (this.isPlaying) {
       this.animationFrame = requestAnimationFrame(this.onTick);
     }
-    const currentTime = this.element.currentTime;
+    const currentTime = this?.element?.currentTime || 0;
     if (currentTime !== this.currentTime) {
       this.currentTime = currentTime;
 
