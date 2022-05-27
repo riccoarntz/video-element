@@ -1,6 +1,6 @@
 {
   "name": "seng-video-element",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "html5 video player",
   "main": "./index.js",
   "types": "./index.d.ts",
