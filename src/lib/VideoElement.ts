@@ -107,12 +107,16 @@ export default class VideoElement extends EventDispatcher {
     if (this.isPlaying) {
       this.animationFrame = requestAnimationFrame(this.onTick);
     }
-    const currentTime = this?.element?.currentTime || 0;
-    if (currentTime !== this.currentTime) {
-      this.currentTime = currentTime;
 
-      if (this.options.onTimeUpdate) {
-        this.options.onTimeUpdate(this.currentTime, this.duration);
+    if (this.element) {
+      const currentTime = this.element.currentTime || 0;
+
+      if (currentTime !== this.currentTime) {
+        this.currentTime = currentTime;
+
+        if (this.options.onTimeUpdate) {
+          this.options.onTimeUpdate(this.currentTime, this.duration);
+        }
       }
     }
   }
